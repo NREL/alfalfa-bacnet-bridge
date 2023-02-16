@@ -46,7 +46,7 @@ class AlfalfaBACnetBridge():
         args = parser.parse_args()
 
         self.device = LocalDeviceObject(ini=args.ini)
-        self.application = AlfalfaBACnetApplication(self.device, args.ini.address)
+        self.application = AlfalfaBACnetApplication(self.device, "0.0.0.0")
 
         self.points = {}
 

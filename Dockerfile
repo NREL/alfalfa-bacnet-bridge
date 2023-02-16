@@ -17,6 +17,6 @@ RUN ln -sf /usr/bin/python3 /usr/bin/python \
 
 COPY alfalfa_bacnet_bridge alfalfa_bacnet_bridge
 COPY BACpypes.ini .
-COPY Discover.py .
+COPY cli_setup.py .
 
 ENV TERM=xterm
