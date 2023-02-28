@@ -1,9 +1,8 @@
-import os
+import sys
 from bacpypes.app import BIPSimpleApplication
 from bacpypes.core import deferred, run
 from bacpypes.debugging import bacpypes_debugging, ModuleLogger
 from bacpypes.local.device import LocalDeviceObject
-from bacpypes.consolelogging import ConfigArgumentParser
 from bacpypes.object import AnalogInputObject, register_object_type
 from bacpypes.local.object import AnalogValueCmdObject
 from bacpypes.task import recurring_function
@@ -11,6 +10,8 @@ from alfalfa_client.alfalfa_client import AlfalfaClient
 from alfalfa_client.alfalfa_client import SiteID
 from bacpypes.service.device import DeviceCommunicationControlServices
 from bacpypes.service.object import ReadWritePropertyMultipleServices
+from bacpypes.primitivedata import CharacterString
+from bacpypes.basetypes import DeviceStatus
 
 _debug = 0
 _log = ModuleLogger(globals())
@@ -32,6 +33,8 @@ class LocalAnalogValueObject(AnalogValueCmdObject):
 
     def ReadProperty(self, propid, arrayIndex=None):
         if propid == "presentValue":
+            print(super().ReadProperty(propid, arrayIndex))
+            print(super().ReadProperty(propid, arrayIndex).__class__)
             return self._sim_value
         return super().ReadProperty(propid, arrayIndex)
 
@@ -39,19 +42,29 @@ class AlfalfaBACnetBridge():
 
     def __init__(self, host, site_id: SiteID) -> None:
         self.client = AlfalfaClient(host)
+
         self.site_id = site_id
 
-        parser = ConfigArgumentParser(description=__doc__)
+        self.device = LocalDeviceObject(
+        objectName="AlfalfaProxy",
+        objectIdentifier=int(599),
+        maxApduLengthAccepted=int(1024),
+        segmentationSupported="segmentedBoth",
+        vendorIdentifier=555,
+        vendorName=CharacterString("NREL"), 
+        modelName=CharacterString("Alfalfa BACnet Bridge"),
+        systemStatus=DeviceStatus(1),
+        description=CharacterString("BACpypes (Python) based tool for exposing alfalfa models to real world BAS systems via BACnet"),
+        firmwareRevision="0.0.0",
+        applicationSoftwareVersion="0.0.0",
+        protocolVersion=1,
+        protocolRevision=0)
 
-        args = parser.parse_args()
-
-        self.device = LocalDeviceObject(ini=args.ini)
         self.application = AlfalfaBACnetApplication(self.device, "0.0.0.0")
 
         self.points = {}
 
     def setup_points(self):
-
         inputs = self.client.get_inputs(self.site_id)
         outputs = self.client.get_outputs(self.site_id)
 
@@ -60,18 +73,23 @@ class AlfalfaBACnetBridge():
         for input in inputs:
             if input in outputs:
                 self.points[input] = LocalAnalogValueObject(objectName=input, objectIdentifier=("analogValue", index), sim_value=outputs[input])
+                print(f"Creating BIDIRECTIONAL point: '{input}'")
             else:
                 self.points[input] = AnalogValueCmdObject(objectName=input, objectIdentifier=("analogValue", index))
+                print(f"Creating INPUT point: '{input}'")
             index += 1
 
         for output, value in outputs.items():
             if output in self.points:
                 continue
-            self.points[output] = AnalogInputObject(objectName=output, objectIdentifier=("analogInput", index), presentValue=value) 
+            self.points[output] = AnalogInputObject(objectName=output, objectIdentifier=("analogInput", index), presentValue=value)
+            print(f"Creating OUTPUT point: '{output}'")
             index += 1
 
         for point in self.points.values():
             self.application.add_object(point)
+
+        # self.application.add_object(AnalogInputObject(objectName="TEST", objectIdentifier=("analogInput", 1), presentValue=17))
 
 
     def run(self):
@@ -79,7 +97,7 @@ class AlfalfaBACnetBridge():
         @bacpypes_debugging
         def main_loop():
             inputs = self.client.get_inputs(self.site_id)
-            outputs = self.client.get_outputs(site_id)
+            outputs = self.client.get_outputs(self.site_id)
 
 
             set_inputs = {}
@@ -94,14 +112,14 @@ class AlfalfaBACnetBridge():
                     if value_type is not None:
                         set_inputs[point] = current_value
             if len(set_inputs) > 0:
-                self.client.set_inputs(site_id, set_inputs)
-        
+                self.client.set_inputs(self.site_id, set_inputs)
+
         deferred(main_loop)
         run()
 
 if __name__ == "__main__":
-    site_id = os.getenv('ALFALFA_SITE_ID')
-    host = os.getenv('ALFALFA_HOST')
+    site_id = sys.argv[2]
+    host = sys.argv[1]
     bridge = AlfalfaBACnetBridge(host, site_id)
     bridge.setup_points()
     bridge.run()

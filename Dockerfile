@@ -16,7 +16,6 @@ RUN ln -sf /usr/bin/python3 /usr/bin/python \
     && poetry install --no-root --only main
 
 COPY alfalfa_bacnet_bridge alfalfa_bacnet_bridge
-COPY BACpypes.ini .
 COPY cli_setup.py .
 
 ENV TERM=xterm
