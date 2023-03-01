@@ -1,3 +1,4 @@
+from datetime import datetime
 import sys
 from bacpypes.app import BIPSimpleApplication
 from bacpypes.core import deferred, run
@@ -10,7 +11,7 @@ from alfalfa_client.alfalfa_client import AlfalfaClient
 from alfalfa_client.alfalfa_client import SiteID
 from bacpypes.service.device import DeviceCommunicationControlServices
 from bacpypes.service.object import ReadWritePropertyMultipleServices
-from bacpypes.primitivedata import CharacterString
+from bacpypes.primitivedata import CharacterString, Date, Time
 from bacpypes.basetypes import DeviceStatus
 
 _debug = 0
@@ -22,10 +23,22 @@ class AlfalfaBACnetApplication(BIPSimpleApplication,
                             DeviceCommunicationControlServices,):
     pass
 
+class AlfalfaBACnetDevice(LocalDeviceObject):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self._date_time: datetime = None
 
+    def ReadProperty(self, propid, arrayIndex=None):
+        if propid == "localTime" and self._date_time != None:
+            time = Time(str(self._date_time.time()))
+            return time.value
+        if propid == "localDate" and self._date_time != None:
+            date = Date(str(self._date_time.date()))
+            return date.value
+        return super().ReadProperty(propid, arrayIndex)
 
 @bacpypes_debugging
-@register_object_type(vendor_id=999)
+@register_object_type(vendor_id=555)
 class LocalAnalogValueObject(AnalogValueCmdObject):
     def __init__(self, sim_value, **kwargs):
         super().__init__(**kwargs)
@@ -33,8 +46,6 @@ class LocalAnalogValueObject(AnalogValueCmdObject):
 
     def ReadProperty(self, propid, arrayIndex=None):
         if propid == "presentValue":
-            print(super().ReadProperty(propid, arrayIndex))
-            print(super().ReadProperty(propid, arrayIndex).__class__)
             return self._sim_value
         return super().ReadProperty(propid, arrayIndex)
 
@@ -45,7 +56,7 @@ class AlfalfaBACnetBridge():
 
         self.site_id = site_id
 
-        self.device = LocalDeviceObject(
+        self.device = AlfalfaBACnetDevice(
         objectName="AlfalfaProxy",
         objectIdentifier=int(599),
         maxApduLengthAccepted=int(1024),
@@ -89,7 +100,6 @@ class AlfalfaBACnetBridge():
         for point in self.points.values():
             self.application.add_object(point)
 
-        # self.application.add_object(AnalogInputObject(objectName="TEST", objectIdentifier=("analogInput", 1), presentValue=17))
 
 
     def run(self):
@@ -99,6 +109,8 @@ class AlfalfaBACnetBridge():
             inputs = self.client.get_inputs(self.site_id)
             outputs = self.client.get_outputs(self.site_id)
 
+            sim_time = self.client.get_sim_time(self.site_id)
+            self.device._date_time = sim_time
 
             set_inputs = {}
             for point, object in self.points.items():
