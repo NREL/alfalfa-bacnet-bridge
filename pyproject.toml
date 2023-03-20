@@ -9,7 +9,7 @@ packages = [{include = "alfalfa_bacnet_bridge"}]
 [tool.poetry.dependencies]
 python = ">=3.8, <3.11"
 bacpypes = "^0.18.6"
-alfalfa-client = { git = "https://github.com/nrel/alfalfa-client.git", branch = "alias_support" }
+alfalfa-client = { git = "https://github.com/nrel/alfalfa-client.git", branch = "develop" }
 importlib-metadata = "^6.0.0"
 bac0 = "^22.9.21"
 
