@@ -66,7 +66,7 @@ async def main_loop(host: str, alfalfa_site: str, command: str):
                     child_process.kill()
                 elif child_process != None:
                     logger.info(f"Process '{child_process.pid}' died, restarting process")
-                child_process = Popen(["python", command, host, site_id])
+                child_process = Popen(["python", "-u", command, host, site_id])
                 logger.info(f"Spawned new child process: '{child_process.pid}'")
                 old_site_id = site_id
 
