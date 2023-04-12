@@ -11,7 +11,7 @@ Alfalfa-BACnet-Bridge only requires [docker](https://www.docker.com/)
 The following command will run the BACnet Alfalfa Bridge using the image from the github package.
 ```bash
 docker run \
-    --detached \
+    --detach \
     -e ALFALFA_SITE=<alfalfa_site> \
     -e ALFALFA_HOST=<alfalfa_host> \
     -p 47808:47808/udp \
