@@ -10,6 +10,9 @@ Alfalfa-BACnet-Bridge only requires [docker](https://www.docker.com/)
 ### Running the Bridge
 The following command will run the BACnet Alfalfa Bridge using the image from the github package.
 ```bash
+# Pull latest image
+docker pull ghcr.io/nrel/alfalfa-bacnet-bridge:latest
+# Run Image
 docker run \
     --detach \
     -e ALFALFA_SITE=<alfalfa_site> \
