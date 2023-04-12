@@ -1,4 +1,4 @@
-FROM ubuntu:20.04 as base
+FROM ubuntu:20.04 AS base
 
 WORKDIR /alfalfa-bacnet-bridge
 
@@ -16,6 +16,13 @@ RUN ln -sf /usr/bin/python3 /usr/bin/python \
     && poetry install --no-root --only main
 
 COPY alfalfa_bacnet_bridge alfalfa_bacnet_bridge
-COPY cli_setup.py .
 
 ENV TERM=xterm
+
+CMD poetry run python alfalfa_bacnet_bridge/alfalfa_watchdog.py alfalfa_bacnet_bridge/alfalfa_bacnet_bridge.py
+
+FROM base AS cli
+
+COPY cli/cli_setup.py .
+
+CMD poetry run python -i cli_setup.py
