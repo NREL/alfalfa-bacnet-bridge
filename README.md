@@ -7,11 +7,37 @@ Alfalfa-BACnet-Bridge only requires [docker](https://www.docker.com/)
 
 ## Usage
 
-### Starting Device
+### Running the Bridge
+The following command will run the BACnet Alfalfa Bridge using the image from the github package.
+```bash
+# Pull latest image
+docker pull ghcr.io/nrel/alfalfa-bacnet-bridge:latest
+# Run Image
+docker run \
+    --detach \
+    -e ALFALFA_SITE=<alfalfa_site> \
+    -e ALFALFA_HOST=<alfalfa_host> \
+    -p 47808:47808/udp \
+    ghcr.io/nrel/alfalfa-bacnet-bridge:latest
+```
+
+### Environment Variables
+These are variables used to describe the bridge's connection to Alfalfa.
+| Variable | Description | Default |
+| --- | -------- | --- |
+| `ALFALFA_SITE` | The Alfalfa Site ID of the model of interest or an alias which points to a site of interest | MUST BE SET |
+| `ALFALFA_HOST` | The URL of the Alfalfa instance | MUST BE SET |
+
+When the specified `ALFALFA_SITE` is an alias the bridge will automatically switch sites when the alias is updated.
+
+## Development
+
+### Building and Starting Device
 1. Edit `.env` to reflect desired Alfalfa `host` and `site_id`
 1. Start device `./start_device.sh`
 
 ### Using CLI
+For development it is useful to be able to connect to your device from the same computer. 
 The CLI is a python REPL with precreates a [BAC0](https://bac0.readthedocs.io/en/latest/) `network` which the user can interact with.
 
 1. Start cli `./start_cli.sh`
