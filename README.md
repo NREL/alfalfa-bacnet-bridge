@@ -27,6 +27,8 @@ These are variables used to describe the bridge's connection to Alfalfa.
 | --- | -------- | --- |
 | `ALFALFA_SITE` | The Alfalfa Site ID of the model of interest or an alias which points to a site of interest | MUST BE SET |
 | `ALFALFA_HOST` | The URL of the Alfalfa instance | MUST BE SET |
+| `ALFALFA_DEVICE_NAME` | The name of the BACnet device | `AlfalfaProxy` |
+| `ALFALFA_DEVICE_ID` | The ID of the BACnet device | `599` |
 
 When the specified `ALFALFA_SITE` is an alias the bridge will automatically switch sites when the alias is updated.
 
