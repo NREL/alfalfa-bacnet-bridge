@@ -77,7 +77,10 @@ class AlfalfaBACnetBridge():
 
     def setup_points(self):
         inputs = self.client.get_inputs(self.site_id)
+        inputs.sort()
         outputs = self.client.get_outputs(self.site_id)
+        output_names = list(outputs.keys())
+        output_names.sort()
 
         index = 0
 
@@ -90,10 +93,10 @@ class AlfalfaBACnetBridge():
                 print(f"Creating INPUT point: '{input}'")
             index += 1
 
-        for output, value in outputs.items():
+        for output in output_names:
             if output in self.points:
                 continue
-            self.points[output] = AnalogInputObject(objectName=output, objectIdentifier=("analogInput", index), presentValue=value)
+            self.points[output] = AnalogInputObject(objectName=output, objectIdentifier=("analogInput", index), presentValue=outputs[output])
             print(f"Creating OUTPUT point: '{output}'")
             index += 1
 
