@@ -1,5 +1,6 @@
 from datetime import datetime
 import sys
+import os
 from bacpypes.app import BIPSimpleApplication
 from bacpypes.core import deferred, run
 from bacpypes.debugging import bacpypes_debugging, ModuleLogger
@@ -57,8 +58,8 @@ class AlfalfaBACnetBridge():
         self.site_id = site_id
 
         self.device = AlfalfaBACnetDevice(
-        objectName="AlfalfaProxy",
-        objectIdentifier=int(599),
+        objectName=os.getenv("ALFALFA_DEVICE_NAME","AlfalfaProxy"),
+        objectIdentifier=int(os.getenv("ALFALFA_DEVICE_ID", 599)),
         maxApduLengthAccepted=int(1024),
         segmentationSupported="segmentedBoth",
         vendorIdentifier=555,
