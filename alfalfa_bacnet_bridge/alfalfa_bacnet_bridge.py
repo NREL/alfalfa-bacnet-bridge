@@ -92,6 +92,7 @@ class AlfalfaBACnetBridge():
             else:
                 self.points[input] = AnalogValueCmdObject(objectName=input, objectIdentifier=("analogValue", index))
                 print(f"Creating INPUT point: '{input}'")
+            self.points[input]._had_value = False
             index += 1
 
         for output in output_names:
@@ -127,6 +128,10 @@ class AlfalfaBACnetBridge():
                     current_value, value_type = object._highest_priority_value()
                     if value_type is not None:
                         set_inputs[point] = current_value
+                        object._had_value = True
+                    elif object._had_value:
+                        set_inputs[point] = None
+                        object._had_value = False
             if len(set_inputs) > 0:
                 self.client.set_inputs(self.site_id, set_inputs)
 
