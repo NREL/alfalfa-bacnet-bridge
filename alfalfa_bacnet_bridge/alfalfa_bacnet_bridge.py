@@ -1,4 +1,5 @@
 from datetime import datetime
+import math
 import sys
 import os
 from bacpypes.app import BIPSimpleApplication
@@ -63,7 +64,7 @@ class AlfalfaBACnetBridge():
         maxApduLengthAccepted=int(1024),
         segmentationSupported="segmentedBoth",
         vendorIdentifier=555,
-        vendorName=CharacterString("NREL"), 
+        vendorName=CharacterString("NREL"),
         modelName=CharacterString("Alfalfa BACnet Bridge"),
         systemStatus=DeviceStatus(1),
         description=CharacterString("BACpypes (Python) based tool for exposing alfalfa models to real world BAS systems via BACnet"),
@@ -127,13 +128,20 @@ class AlfalfaBACnetBridge():
                 if point in inputs:
                     current_value, value_type = object._highest_priority_value()
                     if value_type is not None:
-                        set_inputs[point] = current_value
-                        object._had_value = True
+                        if math.isfinite(current_value):
+                            set_inputs[point] = current_value
+                            object._had_value = True
+                        else:
+                            print(f"Got non-finite value {current_value} for point {point}")
                     elif object._had_value:
                         set_inputs[point] = None
                         object._had_value = False
             if len(set_inputs) > 0:
-                self.client.set_inputs(self.site_id, set_inputs)
+                try:
+                    self.client.set_inputs(self.site_id, set_inputs)
+                except Exception as e:
+                    print(e)
+
 
         deferred(main_loop)
         run()
