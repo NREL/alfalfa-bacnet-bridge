@@ -112,10 +112,14 @@ class AlfalfaBACnetBridge():
         @recurring_function(1000)
         @bacpypes_debugging
         def main_loop():
-            inputs = self.client.get_inputs(self.site_id)
-            outputs = self.client.get_outputs(self.site_id)
+            try:
+                inputs = self.client.get_inputs(self.site_id)
+                outputs = self.client.get_outputs(self.site_id)
 
-            sim_time = self.client.get_sim_time(self.site_id)
+                sim_time = self.client.get_sim_time(self.site_id)
+            except Exception as e:
+                print(e)
+                return
             self.device._date_time = sim_time
 
             set_inputs = {}
