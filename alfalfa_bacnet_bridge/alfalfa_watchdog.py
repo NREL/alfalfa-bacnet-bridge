@@ -51,32 +51,36 @@ async def main_loop(host: str, alfalfa_site: str, command: str):
     client = AlfalfaClient(host)
     old_site_id = None
     child_process:Popen = None
-    
+
 
     while True:
-        site_id = get_site_id(client, alfalfa_site)
+        try:
+            site_id = get_site_id(client, alfalfa_site)
 
-        if site_id != None and (site_id != old_site_id or not is_process_alive(child_process)):
-            logger.info(f"Found new site with ID: '{site_id}'")
-            status = client.status(site_id)
-            logger.info(f"Site status is: '{status}'")
-            if status == "running":
-                if is_process_alive(child_process):
-                    logger.info(f"Killing old child process: '{child_process.pid}'")
-                    child_process.kill()
-                elif child_process != None:
-                    logger.info(f"Process '{child_process.pid}' died, restarting process")
-                child_process = Popen(["python", "-u", command, host, site_id])
-                logger.info(f"Spawned new child process: '{child_process.pid}'")
-                old_site_id = site_id
+            if site_id != None and (site_id != old_site_id or not is_process_alive(child_process)):
+                logger.info(f"Found new site with ID: '{site_id}'")
+                status = client.status(site_id)
+                logger.info(f"Site status is: '{status}'")
+                if status == "running":
+                    if is_process_alive(child_process):
+                        logger.info(f"Killing old child process: '{child_process.pid}'")
+                        child_process.kill()
+                    elif child_process != None:
+                        logger.info(f"Process '{child_process.pid}' died, restarting process")
+                    child_process = Popen(["python", "-u", command, host, site_id])
+                    logger.info(f"Spawned new child process: '{child_process.pid}'")
+                    old_site_id = site_id
 
-        if site_id and is_process_alive(child_process) and client.status(site_id) != "running":
-            logger.info(f"Killing old child process: '{child_process.pid}'")
-            child_process.kill()
+            if site_id and is_process_alive(child_process) and client.status(site_id) != "running":
+                logger.info(f"Killing old child process: '{child_process.pid}'")
+                child_process.kill()
 
-        elif site_id == None:
-            logger.info(f"No site found with identifier: '{alfalfa_site}'")
-        
+            elif site_id == None:
+                logger.info(f"No site found with identifier: '{alfalfa_site}'")
+
+        except Exception as e:
+            print(e)
+
         await asyncio.sleep(5)
 
 if __name__ == "__main__":
