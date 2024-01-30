@@ -79,7 +79,7 @@ async def main_loop(host: str, alfalfa_site: str, command: str):
                 logger.info(f"No site found with identifier: '{alfalfa_site}'")
 
         except Exception as e:
-            print(e)
+            logger.error(e)
 
         await asyncio.sleep(5)
 
