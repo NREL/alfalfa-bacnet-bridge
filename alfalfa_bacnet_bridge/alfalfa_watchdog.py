@@ -61,7 +61,7 @@ async def main_loop(host: str, alfalfa_site: str, command: str):
                 logger.info(f"Found new site with ID: '{site_id}'")
                 status = client.status(site_id)
                 logger.info(f"Site status is: '{status}'")
-                if status == "running":
+                if status == "RUNNING":
                     if is_process_alive(child_process):
                         logger.info(f"Killing old child process: '{child_process.pid}'")
                         child_process.kill()
