@@ -11,7 +11,7 @@ from bacpypes.object import AnalogInputObject, register_object_type
 from bacpypes.local.object import AnalogValueCmdObject
 from bacpypes.task import recurring_function
 from alfalfa_client.alfalfa_client import AlfalfaClient
-from alfalfa_client.alfalfa_client import SiteID
+from alfalfa_client.alfalfa_client import RunID
 from bacpypes.service.device import DeviceCommunicationControlServices
 from bacpypes.service.object import ReadWritePropertyMultipleServices
 from bacpypes.primitivedata import CharacterString, Date, Time
@@ -69,10 +69,10 @@ class LocalAnalogValueObject(AnalogValueCmdObject):
 
 class AlfalfaBACnetBridge():
 
-    def __init__(self, host, site_id: SiteID) -> None:
+    def __init__(self, host, run_id: RunID) -> None:
         self.client = AlfalfaClient(host)
 
-        self.site_id = site_id
+        self.run_id = run_id
 
         self.device = AlfalfaBACnetDevice(
         objectName=os.getenv("ALFALFA_DEVICE_NAME","AlfalfaProxy"),
@@ -94,9 +94,9 @@ class AlfalfaBACnetBridge():
         self.points = {}
 
     def setup_points(self):
-        inputs = self.client.get_inputs(self.site_id)
+        inputs = self.client.get_inputs(self.run_id)
         inputs.sort()
-        outputs = self.client.get_outputs(self.site_id)
+        outputs = self.client.get_outputs(self.run_id)
         output_names = list(outputs.keys())
         output_names.sort()
 
@@ -129,10 +129,10 @@ class AlfalfaBACnetBridge():
         @bacpypes_debugging
         def main_loop():
             try:
-                inputs = self.client.get_inputs(self.site_id)
-                outputs = self.client.get_outputs(self.site_id)
+                inputs = self.client.get_inputs(self.run_id)
+                outputs = self.client.get_outputs(self.run_id)
 
-                sim_time = self.client.get_sim_time(self.site_id)
+                sim_time = self.client.get_sim_time(self.run_id)
             except Exception as e:
                 logger.error(e)
                 return
@@ -158,7 +158,7 @@ class AlfalfaBACnetBridge():
                         object._had_value = False
             if len(set_inputs) > 0:
                 try:
-                    self.client.set_inputs(self.site_id, set_inputs)
+                    self.client.set_inputs(self.run_id, set_inputs)
                 except Exception as e:
                     logger.error(e)
 
@@ -167,8 +167,8 @@ class AlfalfaBACnetBridge():
         run()
 
 if __name__ == "__main__":
-    site_id = sys.argv[2]
+    run_id = sys.argv[2]
     host = sys.argv[1]
-    bridge = AlfalfaBACnetBridge(host, site_id)
+    bridge = AlfalfaBACnetBridge(host, run_id)
     bridge.setup_points()
     bridge.run()
