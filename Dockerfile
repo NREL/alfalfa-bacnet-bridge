@@ -12,7 +12,7 @@ COPY poetry.lock .
 COPY pyproject.toml .
 
 RUN ln -sf /usr/bin/python3 /usr/bin/python \
-    && pip3 install poetry==1.3.2 \
+    && pip3 install poetry==1.8.3 \
     && poetry install --no-root --only main
 
 COPY alfalfa_bacnet_bridge alfalfa_bacnet_bridge
